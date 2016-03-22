@@ -1,0 +1,30 @@
+---
+breadcrumb: PCF Dev Documentation
+title: Proxy Setup
+owner: PCF Dev
+---
+
+### Running PCF Dev behind an HTTP proxy
+Install the vagrant-proxyconf plugin as follows:
+
+$ vagrant plugin install vagrant-proxyconf
+
+#### OS X
+
+Specify your HTTP proxy when starting PCF Dev:
+
+$ HTTP_PROXY=http://PROXY_IP:PROXY_PORT \
+    HTTPS_PROXY=http://PROXY_IP:PROXY_PORT \
+    start-osx
+
+#### Windows (powershell)
+
+$ $env:HTTP_PROXY = "http://PROXY_IP:PROXY_PORT
+$ $env:HTTPS_PROXY = "http://PROXY_IP:PROXY_PORT
+$ start-windows.ps1
+
+The `HTTP_PROXY` and `HTTPS_PROXY` environment variables can also be used when directly running `vagrant up` instead of using the start script
+
+Traffic to the host will not go through the proxy. To connect without proxying to additional hosts set the NO_PROXY environment variable with a comma separated list of hosts. You may want to do this in the case where you are connectings apps to user provided services on a private network.
+
+These proxy options allow app-to-internet connectivity, and access to custom buildpacks and dockers images from the public internet, while running behind a corporate proxy.
