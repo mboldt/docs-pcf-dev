@@ -4,45 +4,51 @@ title: Using PCF Dev Behind a Proxy
 owner: PCF Dev
 ---
 
-##<a id="run-behind-proxy"></a> Run PCF Dev behind an HTTP Proxy
+##<a id="run-behind-proxy"></a> Running PCF Dev Behind an HTTP Proxy
 
-In a restricted network environment, configuring PCF Dev to connect to a proxy permits app-to-internet connectivity, access to custom buildpacks, and the use of Docker images from the public internet.
+In a restricted network environment, configuring PCF Dev to connect to an HTTP proxy permits app-to-Internet connectivity, access to custom buildpacks, and the use of Docker images from the public Internet.
 
-To run PCF Dev behind a proxy:
+To run PCF Dev behind a proxy, set the standard proxy environment variables for your platform before you start PCF Dev:
 
-1. Install the `vagrant-proxyconf` plugin:
+* Using Mac OS X or Linux:
   <pre class="terminal">
-  $ vagrant plugin install vagrant-proxyconf
+  $ HTTP\_PROXY=<span>http</span>://PROXY\_IP:PROXY\_PORT \
+  > HTTPS\_PROXY=<span>http</span>://PROXY\_IP:PROXY\_PORT \
+  > cf dev start
+  </pre>
+* Using Windows PowerShell:
+  <pre class="terminal">
+  >> $env:HTTP\_PROXY = "<span>http</span>://PROXY\_IP:PROXY\_PORT"
+  >> $env:HTTPS\_PROXY = "<span>http</span>://PROXY\_IP:PROXY\_PORT"
+  >> cf dev start
   </pre>
 
-2. Specify your HTTP proxy when starting PCF Dev:
-   * Using OS X:
-		<pre class="terminal">
-		$ HTTP\_PROXY=<span>http</span>://PROXY\_IP:PROXY\_PORT \
-		> HTTPS\_PROXY=<span>http</span>://PROXY\_IP:PROXY\_PORT \
-		> ./start-osx
-		</pre>
-   * Using Windows PowerShell:
-		<pre class="terminal">
-		>> $env:HTTP\_PROXY = "<span>http</span>://PROXY\_IP:PROXY\_PORT"
-		>> $env:HTTPS\_PROXY = "<span>http</span>://PROXY\_IP:PROXY\_PORT"
-		>> .\start-windows.ps1
-		</pre>
+<p class="note"><strong>Note</strong>:
+Do not use <code>localhost</code> for <code>PROXY_IP</code> or as the proxy server hostname, because <code>localhost</code> refers to the PCF Dev VM itself.
+If PCF Dev needs to use a locally-running HTTP proxy, the proxy must be listening on all network interfaces, and you must address it as
+<code>host.pcfdev.io</code>. For a system domain <code>local2.pcfdev.io</code>, address the proxy as <code>host2.pcfdev.io</code>, and so on.
+</p>
 
-##<a id="allow-traffic-behind-proxy"></a> Allow Traffic to Bypass the Proxy
+##<a id="allow-cf-cli-behind-proxy"></a> Using the cf CLI Behind an HTTP Proxy
 
-You can connect to other addresses without using the proxy. For example, you might do this to connect apps to user-provided services on a private network.
+You must configure the cf CLI to bypass your HTTP proxy for addresses that end in `local.pcfdev.io`, which is your system domain:
 
-* Set the `NO_PROXY` environment variable to a comma-separated list of hosts.
+* For Mac OS X or Linux:
+  <pre class="terminal">
+  $ export NO\_PROXY=.local.pcfdev.io,local.pcfdev.io,$NO_PROXY
+  $ cf login -a http<span>s</span>://api.local.pcfdev.io --skip-ssl-validation
+  </pre>
+* For Windows PowerShell:
+  <pre class="terminal">
+  >> $env:NO\_PROXY = ".local.pcfdev.io,local.pcfdev.io,OTHER-DOMAINS"
+  >> cf login -a http<span>s</span>://api.local.pcfdev.io --skip-ssl-validation
+  </pre>
+
+## <a id="allow-traffic-behind-proxy"></a> Allowing Application Traffic to Bypass the Proxy
+
+You can configure your apps to connect to other addresses without using the proxy. For example, you can connect apps to user-provided services on a private network.
+
+* Set the `NO_PROXY` environment variable to a comma-separated list of hosts:
    <pre class="terminal">
-   $ cf set-env APP\_NAME NO\_PROXY=192.168.2.54,192.168.100.34
+   $ cf set-env APP\_NAME NO\_PROXY=192.0.2.54,198.51.100.34
    </pre>	
-
-##<a id="advanced-usage"></a> (Advanced) Configure an HTTP Proxy with Vagrant
-
-If you use Vagrant to manage PCF Dev, follow the procedure [above](#run-behind-proxy) with `vagrant` directly:
-
-* Set the `HTTP_PROXY` and `HTTPS_PROXY` environment variables when you run `vagrant up`:
-  <pre class="terminal">
-  $ HTTP\_PROXY=<span>http</span>://PROXY\_IP:PROXY\_PORT HTTPS\_PROXY=<span>http</span>://PROXY\_IP:PROXY\_PORT vagrant up
-  </pre>
